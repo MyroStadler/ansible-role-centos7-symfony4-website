@@ -1,13 +1,17 @@
 ---
 # tasks file for myrostadler.centos7_symfony4_website
-- set_fact: install_dir="/var/www/{{ install_dir_name }}"
+- name: Get install directory
+  set_fact: install_dir="/var/www/{{ install_dir_name }}"
 
 - name: Get mysql server version
   command: "mysql -uroot -p{{ env_database_root_password }} -e 'SELECT VERSION();'"
   register: mysql_server_version
-- set_fact: env_database_server_version="{{ mysql_server_version.stdout_lines[1] }}"
+  changed_when: false
 
-- name: Show mysql server version
+- name: Get DB server version
+  set_fact: env_database_server_version="{{ mysql_server_version.stdout_lines[1] }}"
+
+- name: Show DB server version
   debug:
     msg: "{{ env_database_server_version }}"
 
@@ -15,8 +19,10 @@
   become: false
   command: whoami
   register: remote_user
+  changed_when: false
 
-- set_fact: remote_username="{{ remote_user.stdout }}"
+- name: Get remote user
+  set_fact: remote_username="{{ remote_user.stdout }}"
 
 - name: "{{ remote_username }} joins the apache group"
   user:
@@ -56,7 +62,7 @@
 
 - name: Check out site git repo to /tmp, using SSH
   git:
-    repo: "{{ install_repo_ssh}}"
+    repo: "{{ install_repo_ssh }}"
     version: "{{ install_repo_version }}"
     dest: "/tmp/{{ install_dir_name }}"
     # issue with being root for git checkout
@@ -69,6 +75,7 @@
 
 - name: "Copy repo checkout to {{ install_dir }}"
   command: "mv /tmp/{{ install_dir_name }} /var/www/"
+  changed_when: false
 
 - name: Add standard .env file
   template:
@@ -99,21 +106,25 @@
   command: php bin/console cache:clear
   args:
     chdir: "{{ install_dir }}"
+  changed_when: false
 
 - name: Install project assets using console
   command: php bin/console assets:install
   args:
     chdir: "{{ install_dir }}"
+  changed_when: false
 
 - name: Run DB migrations using console
   command: php bin/console doctrine:migrations:migrate -n
   args:
     chdir: "{{ install_dir }}"
+  changed_when: false
 
 - name: Load DB fixtures using console
   command: php bin/console doctrine:fixtures:load -n
   args:
     chdir: "{{ install_dir }}"
+  changed_when: false
 
 - name: "Ensure apache is the owner of and permissions are directories 755 / files 644 for {{ install_dir }}"
   file:
