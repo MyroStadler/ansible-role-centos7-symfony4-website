@@ -1,0 +1,12 @@
+---
+# defaults file for myrostadler.centos7_symfony4_website
+install_repo_version: master
+ssl_cert_file: /etc/pki/tls/certs/localhost.crt
+ssl_cert_key_file: /etc/pki/tls/private/localhost.key
+env_extra: []
+env_app_env: dev
+env_app_debug: true
+env_php_version: 7.2
+env_domain_name: localhost
+env_database_port: 3306
+env_database_host: localhost

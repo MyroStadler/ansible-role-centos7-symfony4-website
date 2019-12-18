@@ -1,0 +1,29 @@
+<VirtualHost *:80>
+    ServerAdmin webmaster@{{ install_dir_name }}.lan
+    DocumentRoot {{ install_dir }}/public
+    ServerName {{ install_dir_name }}
+    DirectoryIndex index.php 
+    <FilesMatch \.php$>
+        SetHandler application/x-httpd-php
+    </FilesMatch>
+    <Directory {{ install_dir }}/public>
+        AllowOverride All
+        Order Allow,Deny
+        Allow from All
+    </Directory>
+</VirtualHost>
+
+<VirtualHost _default_:443>
+    ServerAdmin webmaster@{{ install_dir_name }}.lan
+    DocumentRoot {{ install_dir }}/public
+    ServerName {{ install_dir_name }}
+    DirectoryIndex index.php
+    <Directory {{ install_dir }}/public>
+        AllowOverride All
+        Order Allow,Deny
+        Allow from All
+    </Directory>
+    SSLEngine On
+    SSLCertificateFile {{ ssl_cert_file }}
+    SSLCertificateKeyFile {{ ssl_cert_key_file }}
+</VirtualHost>
