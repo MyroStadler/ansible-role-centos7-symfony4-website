@@ -1,22 +1,12 @@
 <VirtualHost *:80>
-    ServerAdmin webmaster@{{ install_dir_name }}.lan
-    DocumentRoot {{ install_dir }}/public
-    ServerName {{ install_dir_name }}
-    DirectoryIndex index.php 
-    <FilesMatch \.php$>
-        SetHandler application/x-httpd-php
-    </FilesMatch>
-    <Directory {{ install_dir }}/public>
-        AllowOverride All
-        Order Allow,Deny
-        Allow from All
-    </Directory>
+    ServerName {{ inventory_hostname }}
+    Redirect / https://{{ inventory_hostname }}/
 </VirtualHost>
 
 <VirtualHost _default_:443>
-    ServerAdmin webmaster@{{ install_dir_name }}.lan
+    ServerAdmin webmaster@{{ inventory_hostname }}
     DocumentRoot {{ install_dir }}/public
-    ServerName {{ install_dir_name }}
+    ServerName {{ inventory_hostname }}
     DirectoryIndex index.php
     <Directory {{ install_dir }}/public>
         AllowOverride All
