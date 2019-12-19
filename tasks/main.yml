@@ -50,6 +50,12 @@
     name: "{{ env_database_name }}"
     state: present
 
+- name: Add / replace default SSL config
+  template:
+    src: ssl.conf.j2
+    dest: "/etc/httpd/conf.d/ssl.conf"
+    force: true
+
 - name: Add virtual host
   template:
     src: vhost.conf.j2
