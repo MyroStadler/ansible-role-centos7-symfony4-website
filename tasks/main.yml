@@ -1,19 +1,19 @@
 ---
 # tasks file for myrostadler.centos7_symfony4_website
 - name: Get install directory
-  set_fact: install_dir="/var/www/{{ install_dir_name }}"
+  set_fact: website_install_dir="/var/www/{{ website_install_dir_name }}"
 
 - name: Get mysql server version
-  command: "mysql -uroot -p{{ env_database_root_password }} -e 'SELECT VERSION();'"
-  register: mysql_server_version
+  command: "mysql -uroot -p{{ website_install_env_database_root_password }} -e 'SELECT VERSION();'"
+  register: website_install_mysql_server_version
   changed_when: false
 
 - name: Get DB server version
-  set_fact: env_database_server_version="{{ mysql_server_version.stdout_lines[1] }}"
+  set_fact: website_install_env_database_server_version="{{ website_install_mysql_server_version.stdout_lines[1] }}"
 
 - name: Show DB server version
   debug:
-    msg: "{{ env_database_server_version }}"
+    msg: "{{ website_install_env_database_server_version }}"
 
 - name: Get the remote user
   become: false
@@ -30,12 +30,12 @@
     groups: apache
     append: true
 
-- name: "Ensure git.unipart.io is a known host for {{ remote_username }}"
+- name: "Ensure {{ website_install_git_known_host }} is a known host for {{ remote_username }}"
   lineinfile:
     dest: "/home/{{ remote_username }}/.ssh/known_hosts"
     create: yes
-    line: "{{ lookup('pipe', 'ssh-keyscan -t rsa git.unipart.io') }}"
-    regexp: "^git\\.unipart\\.io"
+    line: "{{ lookup('pipe', 'ssh-keyscan -t rsa ' + website_install_git_known_host) }}"
+    regexp: "{{ website_install_git_known_host_regex }}"
 
 - name: "Ensure {{ remote_username }} owns /home/{{ remote_username }}/.ssh/known_hosts"
   file:
@@ -45,64 +45,65 @@
     state: file
     mode: u=rwX,g=rX,o=rX
 
-- name: "Ensure DB {{ env_database_name }} exists"
+- name: "Ensure DB {{ website_install_env_database_name }} exists"
   mysql_db:
-    name: "{{ env_database_name }}"
+    name: "{{ website_install_env_database_name }}"
     state: present
 
 - name: Add / replace default SSL config
   template:
     src: ssl.conf.j2
-    dest: "/etc/httpd/conf.d/ssl.conf"
+    dest: "{{ website_install_default_ssl_conf_file }}"
     force: true
 
 - name: Add virtual host
   template:
     src: vhost.conf.j2
-    dest: "/etc/httpd/conf.d/{{ install_dir_name }}.conf"
+    dest: "{{ website_install_conf_scan_folder }}/{{ website_install_dir_name }}.conf"
 
 - name: Zap old git checkout in /tmp
   file:
-    path: "/tmp/{{ install_dir_name }}"
+    path: "/tmp/{{ website_install_dir_name }}"
     state: absent
 
 - name: Check out site git repo to /tmp, using SSH
   git:
-    repo: "{{ install_repo_ssh }}"
-    version: "{{ install_repo_version }}"
-    dest: "/tmp/{{ install_dir_name }}"
+    repo: "{{ website_install_repo_ssh_uri }}"
+    version: "{{ website_install_repo_version }}"
+    dest: "/tmp/{{ website_install_dir_name }}"
     # issue with being root for git checkout
   become: false
 
 - name: Zap old installed website
   file:
-    path: "{{ install_dir }}"
+    path: "{{ website_install_dir }}"
     state: absent
 
-- name: "Copy repo checkout to {{ install_dir }}"
-  command: "mv /tmp/{{ install_dir_name }} /var/www/"
+- name: "Copy repo checkout to {{ website_install_dir }}"
+  command: "mv /tmp/{{ website_install_dir_name }} /var/www/"
   changed_when: false
 
 - name: Add standard .env file
   template:
     src: env.j2
-    dest: "{{ install_dir }}/.env"
+    dest: "{{ website_install_dir }}/.env"
 
 - name: Add extra lines to .env file
   lineinfile:
-    dest: "{{ install_dir }}/.env"
+    dest: "{{ website_install_dir }}/.env"
     line: "{{ item.name }}={{ item.value }}"
-  with_items: "{{ env_extra }}"
+  with_items: "{{ website_install_env_extra }}"
+  no_log: true
 
 - name: Add useless but required .env.local.php file
   template:
     src: env.local.php.j2
-    dest: "{{ install_dir }}/.env.local.php"
+    dest: "{{ website_install_dir }}/.env.local.php"
 
 - name: Install php project libraries using composer
   composer:
     command: install
-    working_dir: "{{ install_dir }}"
+    working_dir: "{{ website_install_dir }}"
     # composer does not see scripts as secure when running as root, you would get a warning
     no_scripts: true
     # change this on prod
@@ -111,30 +112,30 @@
 - name: Clean project cache using console
   command: php bin/console cache:clear
   args:
-    chdir: "{{ install_dir }}"
+    chdir: "{{ website_install_dir }}"
   changed_when: false
 
 - name: Install project assets using console
   command: php bin/console assets:install
   args:
-    chdir: "{{ install_dir }}"
+    chdir: "{{ website_install_dir }}"
   changed_when: false
 
 - name: Run DB migrations using console
   command: php bin/console doctrine:migrations:migrate -n
   args:
-    chdir: "{{ install_dir }}"
+    chdir: "{{ website_install_dir }}"
   changed_when: false
 
 - name: Load DB fixtures using console
   command: php bin/console doctrine:fixtures:load -n
   args:
-    chdir: "{{ install_dir }}"
+    chdir: "{{ website_install_dir }}"
   changed_when: false
 
-- name: "Ensure apache is the owner of and permissions are directories 755 / files 644 for {{ install_dir }}"
+- name: "Ensure apache is the owner of and permissions are directories 755 / files 644 for {{ website_install_dir }}"
   file:
-    dest: "{{ install_dir }}"
+    dest: "{{ website_install_dir }}"
     owner: apache
     group: apache
     mode: u=rwX,g=rX,o=rX

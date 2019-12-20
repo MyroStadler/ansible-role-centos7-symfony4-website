@@ -13,26 +13,17 @@ Role Variables
 
 ### Has default value
 
-- install_repo_version
-- ssl_cert_file
-- ssl_cert_key_file
-- env_extra
-- env_app_env
-- env_app_debug
-- env_php_version
-- env_domain_name
-- env_database_port
-- env_database_host
+Please see `defaults/main.yml` for defaults.
 
 ### Has no default value
 
-- env_database_name
-- env_database_user
-- env_database_password
-- env_database_root_password
-- env_app_secret
-- install_dir_name
-- install_repo_ssh
+- website_install_env_database_name
+- website_install_env_database_user
+- website_install_env_database_password
+- website_install_env_database_root_password
+- website_install_env_app_secret
+- website_install_dir_name
+- website_install_repo_ssh_uri
 
 
 Dependencies

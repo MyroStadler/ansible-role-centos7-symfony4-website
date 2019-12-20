@@ -5,15 +5,15 @@
 
 <VirtualHost _default_:443>
     ServerAdmin webmaster@{{ inventory_hostname }}
-    DocumentRoot {{ install_dir }}/public
+    DocumentRoot {{ website_install_dir }}/public
     ServerName {{ inventory_hostname }}
     DirectoryIndex index.php
-    <Directory {{ install_dir }}/public>
+    <Directory {{ website_install_dir }}/public>
         AllowOverride All
         Order Allow,Deny
         Allow from All
     </Directory>
     SSLEngine On
-    SSLCertificateFile {{ ssl_cert_file }}
-    SSLCertificateKeyFile {{ ssl_cert_key_file }}
+    SSLCertificateFile {{ website_install_ssl_cert_file }}
+    SSLCertificateKeyFile {{ website_install_ssl_cert_key_file }}
 </VirtualHost>
