@@ -15,35 +15,35 @@
   debug:
     msg: "{{ website_install_env_database_server_version }}"
 
-- name: Get the remote user
-  become: false
-  command: whoami
-  register: remote_user
-  changed_when: false
-
-- name: Get remote user
-  set_fact: remote_username="{{ remote_user.stdout }}"
-
-- name: "{{ remote_username }} joins the apache group"
-  user:
-    name: "{{ remote_username }}"
-    groups: apache
-    append: true
-
-- name: "Ensure {{ website_install_git_known_host }} is a known host for {{ remote_username }}"
-  lineinfile:
-    dest: "/home/{{ remote_username }}/.ssh/known_hosts"
-    create: yes
-    line: "{{ lookup('pipe', 'ssh-keyscan -t rsa ' + website_install_git_known_host) }}"
-    regexp: "{{ website_install_git_known_host_regex }}"
-
-- name: "Ensure {{ remote_username }} owns /home/{{ remote_username }}/.ssh/known_hosts"
-  file:
-    dest: "/home/{{ remote_username }}/.ssh/known_hosts"
-    owner: "{{ remote_username }}"
-    group: "{{ remote_username }}"
-    state: file
-    mode: u=rwX,g=rX,o=rX
+#- name: Get the remote user
+#  become: false
+#  command: whoami
+#  register: remote_user
+#  changed_when: false
+#
+#- name: Get remote user
+#  set_fact: remote_username="{{ remote_user.stdout }}"
+#
+#- name: "{{ ansible_user }} joins the apache group"
+#  user:
+#    name: "{{ ansible_user }}"
+#    groups: apache
+#    append: true
+#
+#- name: "Ensure {{ website_install_git_known_host }} is a known host for {{ ansible_user }}"
+#  lineinfile:
+#    dest: "/home/{{ ansible_user }}/.ssh/known_hosts"
+#    create: yes
+#    line: "{{ lookup('pipe', 'ssh-keyscan -t rsa ' + website_install_git_known_host) }}"
+#    regexp: "{{ website_install_git_known_host_regex }}"
+#
+#- name: "Ensure {{ ansible_user }} owns /home/{{ ansible_user }}/.ssh/known_hosts"
+#  file:
+#    dest: "/home/{{ ansible_user }}/.ssh/known_hosts"
+#    owner: "{{ ansible_user }}"
+#    group: "{{ ansible_user }}"
+#    state: file
+#    mode: u=rwX,g=rX,o=rX
 
 - name: "Ensure DB {{ website_install_env_database_name }} exists"
   mysql_db:
@@ -71,7 +71,8 @@
     repo: "{{ website_install_repo_ssh_uri }}"
     version: "{{ website_install_repo_version }}"
     dest: "/tmp/{{ website_install_dir_name }}"
-    # issue with being root for git checkout
+    clone: true
+    accept_hostkey: true
   become: false
 
 - name: Zap old installed website
@@ -133,7 +134,7 @@
     chdir: "{{ website_install_dir }}"
   changed_when: false
 
-- name: "Ensure apache is the owner of and permissions are directories 755 / files 644 for {{ website_install_dir }}"
+- name: "Ensure apache is the owner of and permissions are correct for {{ website_install_dir }}"
   file:
     dest: "{{ website_install_dir }}"
     owner: apache
