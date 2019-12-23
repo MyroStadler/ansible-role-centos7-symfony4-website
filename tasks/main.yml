@@ -15,36 +15,6 @@
   debug:
     msg: "{{ website_install_env_database_server_version }}"
 
-#- name: Get the remote user
-#  become: false
-#  command: whoami
-#  register: remote_user
-#  changed_when: false
-#
-#- name: Get remote user
-#  set_fact: remote_username="{{ remote_user.stdout }}"
-#
-#- name: "{{ ansible_user }} joins the apache group"
-#  user:
-#    name: "{{ ansible_user }}"
-#    groups: apache
-#    append: true
-#
-#- name: "Ensure {{ website_install_git_known_host }} is a known host for {{ ansible_user }}"
-#  lineinfile:
-#    dest: "/home/{{ ansible_user }}/.ssh/known_hosts"
-#    create: yes
-#    line: "{{ lookup('pipe', 'ssh-keyscan -t rsa ' + website_install_git_known_host) }}"
-#    regexp: "{{ website_install_git_known_host_regex }}"
-#
-#- name: "Ensure {{ ansible_user }} owns /home/{{ ansible_user }}/.ssh/known_hosts"
-#  file:
-#    dest: "/home/{{ ansible_user }}/.ssh/known_hosts"
-#    owner: "{{ ansible_user }}"
-#    group: "{{ ansible_user }}"
-#    state: file
-#    mode: u=rwX,g=rX,o=rX
-
 - name: "Ensure DB {{ website_install_env_database_name }} exists"
   mysql_db:
     name: "{{ website_install_env_database_name }}"
@@ -108,7 +78,7 @@
     # composer does not see scripts as secure when running as root, you would get a warning
     no_scripts: true
     # change this on prod
-    no_dev: false
+    no_dev: "{{ website_install_env_app_env != 'dev' }}"
 
 - name: Clean project cache using console
   command: php bin/console cache:clear

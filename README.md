@@ -40,13 +40,13 @@ Example Playbook
   hosts: all
   become: true
   vars:
-    env_database_name: fizizzle_dev
-    env_database_root_password: foo
-    env_database_user: bar
-    env_database_password: baz
-    env_app_secret: superSecretKeyTellNoone
-    install_dir_name: fizizzle
-    install_repo_ssh: git@git.example.com:username/repo.git
+    website_install_env_database_name: fizizzle_dev
+    website_install_env_database_root_password: foo
+    website_install_env_database_user: bar
+    website_install_env_database_password: baz
+    website_install_env_app_secret: superSecretKeyTellNoone
+    website_install_dir_name: fizizzle
+    website_install_repo_ssh_uri: git@git.example.com:username/repo.git
   tasks:
   - include_role: 
       name: myrostadler.centos7_symfony4_website
