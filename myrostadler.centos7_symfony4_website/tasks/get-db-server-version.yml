@@ -1,0 +1,19 @@
+- name: Get DB server version (mysql)
+  command: "mysql -uroot -p{{ website_install_env_database_root_password }} -e 'SELECT VERSION();'"
+  register: website_install_db_server_version
+  changed_when: false
+  when: website_install_env_database_protocol == 'mysql'
+- name: Extract DB server version (mysql)
+  set_fact: website_install_env_database_server_version="{{ website_install_db_server_version.stdout_lines[1] }}"
+  no_log: true
+  when: website_install_env_database_protocol == 'mysql'
+
+- name: Get DB server version (pgsql)
+  #  raw: "PGPASSWORD={{ website_install_env_database_password }} psql -h {{ website_install_env_database_host }} -U {{ website_install_env_database_user }} -d {{ website_install_env_database_name }} -c 'SHOW server_version;'"
+  command: sudo -u postgres psql -c "SHOW server_version;"
+  register: website_install_db_server_version
+  changed_when: false
+  when: website_install_env_database_protocol == 'pgsql'
+- name: Extract DB server version (pgsql)
+  set_fact: website_install_env_database_server_version="{{ website_install_db_server_version.stdout_lines[2] | trim }}"
+  when: website_install_env_database_protocol == 'pgsql'
