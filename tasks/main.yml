@@ -38,7 +38,9 @@
   command:
     cmd: "git clone --branch {{ install_repo_version }} {{ install_repo_ssh_uri }} {{ install_dir_name }}"
     chdir: /tmp
-#  become: false
+  when: true
+  args:
+    warn: false
 
 - name: Zap old installed website
   file:
