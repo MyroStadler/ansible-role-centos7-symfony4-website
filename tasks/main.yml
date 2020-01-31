@@ -25,14 +25,20 @@
     path: "/tmp/{{ install_dir_name }}"
     state: absent
 
-- name: Check out site git repo to /tmp, using SSH
-  git:
-    repo: "{{ install_repo_ssh_uri }}"
-    version: "{{ install_repo_version }}"
-    dest: "/tmp/{{ install_dir_name }}"
-    clone: true
-    accept_hostkey: true
-  become: false
+#- name: Check out site git repo to /tmp, using SSH
+#  git:
+#    repo: "{{ install_repo_ssh_uri }}"
+#    version: "{{ install_repo_version }}"
+#    dest: "/tmp/{{ install_dir_name }}"
+#    clone: true
+#    accept_hostkey: true
+#  become: false
+
+- name: Git checkout
+  command:
+    cmd: "git clone --branch {{ install_repo_version }} {{ install_repo_ssh_uri }} {{ install_dir_name }}"
+    chdir: /tmp
+#  become: false
 
 - name: Zap old installed website
   file:
